@@ -42,7 +42,7 @@ Commits within a PR must be grouped by logical section, not bundled into a singl
 - Merge strategy: **squash merge** — keeps `main` history linear; the resulting commit title must be `<emoji> <pr-title> (#N)` where `N` is the PR number. GitHub's UI appends `(#N)` automatically; when merging via API (e.g. MCP tools) it must be set explicitly
 - After merging, always pull `main` locally and delete the merged branch:
   ```bash
-  git checkout main && git pull origin main && git branch -d <branch>
+  git checkout main && git pull origin main && git branch -D <branch>
   ```
 
 ## Language
@@ -54,6 +54,16 @@ All public-facing content must be written in **English**: issues, PR titles and 
 **Debate before executing.** If something seems wrong, missing, inconsistent, or improvable, raise it and discuss options before proceeding. Do not execute blindly.
 
 **Keep this file up to date.** If during development a decision is made, a convention is added, or anything worth documenting changes, update `CLAUDE.md` accordingly in the same PR where the change happens.
+
+## Technology Stack
+
+- **Runtime**: Node.js + TypeScript (strict mode)
+- **Framework**: Fastify — schema-first validation (JSON Schema / TypeBox), TypeScript-native
+- **Database**: PostgreSQL
+- **API style**: REST
+
+Stack decisions are governed by the project constitution at `.specify/memory/constitution.md`.
+Changes require a constitution amendment.
 
 <!-- SPECKIT START -->
 For additional context about technologies to be used, project structure,
