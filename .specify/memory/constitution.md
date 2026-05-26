@@ -1,50 +1,103 @@
-# [PROJECT_NAME] Constitution
-<!-- Example: Spec Constitution, TaskFlow Constitution, etc. -->
+<!--
+  Sync Impact Report
+  ==================
+  Version change: [TEMPLATE] → 1.0.0 (initial ratification) → 1.0.1 (add Fastify to stack)
+
+  Modified principles:
+  - All sections: template placeholders → concrete content (initial authoring)
+
+  Added sections:
+  - Core Principles (I–IV)
+  - Technology Stack
+  - Development Workflow
+  - Governance
+
+  Removed sections:
+  - [SECTION_2_NAME] / [SECTION_3_NAME] generic placeholders replaced
+
+  Templates status:
+  - .specify/templates/plan-template.md  ✅ updated — Constitution Check section aligned
+  - .specify/templates/spec-template.md  ✅ no changes required (template-agnostic)
+  - .specify/templates/tasks-template.md ✅ no changes required (template-agnostic)
+
+  Deferred TODOs:
+  - None
+-->
+
+# ainodeats Constitution
 
 ## Core Principles
 
-### [PRINCIPLE_1_NAME]
-<!-- Example: I. Library-First -->
-[PRINCIPLE_1_DESCRIPTION]
-<!-- Example: Every feature starts as a standalone library; Libraries must be self-contained, independently testable, documented; Clear purpose required - no organizational-only libraries -->
+### I. API-First Design
 
-### [PRINCIPLE_2_NAME]
-<!-- Example: II. CLI Interface -->
-[PRINCIPLE_2_DESCRIPTION]
-<!-- Example: Every library exposes functionality via CLI; Text in/out protocol: stdin/args → stdout, errors → stderr; Support JSON + human-readable formats -->
+Every feature MUST be defined as an API contract — endpoints, request/response schemas, and
+HTTP status codes — before any implementation begins. Implementation follows the contract,
+never the reverse. Contracts live in `specs/[feature]/contracts/` and MUST be approved before
+coding starts. Any deviation from a ratified contract requires explicit re-approval.
 
-### [PRINCIPLE_3_NAME]
-<!-- Example: III. Test-First (NON-NEGOTIABLE) -->
-[PRINCIPLE_3_DESCRIPTION]
-<!-- Example: TDD mandatory: Tests written → User approved → Tests fail → Then implement; Red-Green-Refactor cycle strictly enforced -->
+### II. Test-Driven Development (NON-NEGOTIABLE)
 
-### [PRINCIPLE_4_NAME]
-<!-- Example: IV. Integration Testing -->
-[PRINCIPLE_4_DESCRIPTION]
-<!-- Example: Focus areas requiring integration tests: New library contract tests, Contract changes, Inter-service communication, Shared schemas -->
+Tests MUST be written and confirmed failing before any production code is written.
+The Red-Green-Refactor cycle is strictly enforced. Integration tests MUST target a real
+PostgreSQL database — mocked database tests are prohibited (mocks mask schema divergence).
+No feature is considered complete until all its tests pass.
 
-### [PRINCIPLE_5_NAME]
-<!-- Example: V. Observability, VI. Versioning & Breaking Changes, VII. Simplicity -->
-[PRINCIPLE_5_DESCRIPTION]
-<!-- Example: Text I/O ensures debuggability; Structured logging required; Or: MAJOR.MINOR.BUILD format; Or: Start simple, YAGNI principles -->
+### III. AI-Augmented, Human-Approved
 
-## [SECTION_2_NAME]
-<!-- Example: Additional Constraints, Security Requirements, Performance Standards, etc. -->
+AI generates, suggests, and drafts. Humans review and explicitly approve every architectural
+decision, spec, plan, and significant code change before it is executed. The AI MUST raise
+concerns, inconsistencies, or improvements before proceeding — blind execution is a violation
+of this principle. The collaboration model is: debate first, execute second.
 
-[SECTION_2_CONTENT]
-<!-- Example: Technology stack requirements, compliance standards, deployment policies, etc. -->
+### IV. Simplicity / YAGNI
 
-## [SECTION_3_NAME]
-<!-- Example: Development Workflow, Review Process, Quality Gates, etc. -->
+Implement the simplest solution that satisfies the current, concrete requirement. Speculative
+abstractions, premature optimizations, and future-proofing without a present need are
+prohibited. Three similar lines are better than a premature abstraction. Whenever complexity
+is genuinely required, it MUST be justified explicitly in the plan's Complexity Tracking table.
 
-[SECTION_3_CONTENT]
-<!-- Example: Code review requirements, testing gates, deployment approval process, etc. -->
+## Technology Stack
+
+- **Runtime**: Node.js with TypeScript (strict mode enabled)
+- **Framework**: Fastify — schema-first validation via JSON Schema / TypeBox aligns with
+  Principle I; TypeScript-first codebase (types are not a separate community package)
+- **Database**: PostgreSQL — integration tests MUST use a real instance (see Principle II)
+- **API style**: REST
+- **Testing**: framework TBD per feature plan; contract + integration tests are mandatory
+
+Stack changes require an explicit constitution amendment and version bump.
+
+## Development Workflow
+
+- **Branch naming**: `<type>/<issue-number>-<short-description>`
+  (e.g., `feat/5-add-recipe-endpoint`, `fix/12-null-ingredient-crash`)
+- **Commits**: Conventional Commits with emoji prefix
+  (`✨ feat`, `🐛 fix`, `🔧 chore`, `♻️ refactor`, `📝 docs`, `✅ test`)
+- **Co-authorship**: `Co-Authored-By:` trailers are NOT added; commits are signed by the human
+  author only
+- **PR body**: MUST contain `Closes #N` to trigger issue close on squash merge
+- **Merge strategy**: squash merge — keeps `main` history linear
+- **Language**: all public-facing content (issues, PRs, commits, code, comments, docs) MUST be
+  in English
 
 ## Governance
-<!-- Example: Constitution supersedes all other practices; Amendments require documentation, approval, migration plan -->
 
-[GOVERNANCE_RULES]
-<!-- Example: All PRs/reviews must verify compliance; Complexity must be justified; Use [GUIDANCE_FILE] for runtime development guidance -->
+This constitution supersedes all other practices. When a conflict arises between this document
+and any other guide, this document wins; the other guide MUST be updated.
 
-**Version**: [CONSTITUTION_VERSION] | **Ratified**: [RATIFICATION_DATE] | **Last Amended**: [LAST_AMENDED_DATE]
-<!-- Example: Version: 2.1.1 | Ratified: 2025-06-13 | Last Amended: 2025-07-16 -->
+Amendment procedure:
+1. Document the rationale for the change
+2. Update this file with the amended content
+3. Increment the version number (MAJOR for removals/redefinitions, MINOR for additions,
+   PATCH for clarifications)
+4. Propagate changes to all dependent templates and `CLAUDE.md` in the same PR
+5. All open feature branches MUST be reviewed for compliance after a MAJOR amendment
+
+All PRs and reviews MUST verify compliance with the four Core Principles.
+Complexity deviations from Principle IV MUST be documented in the plan's Complexity Tracking
+table before implementation begins.
+
+`CLAUDE.md` is the authoritative runtime development guide and MUST remain in sync with this
+constitution.
+
+**Version**: 1.0.1 | **Ratified**: 2026-05-26 | **Last Amended**: 2026-05-26
