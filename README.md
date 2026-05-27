@@ -5,7 +5,7 @@
 
 *Built entirely with AI assistance as a personal learning and training project.*
 
-A REST API for restaurant discovery and food ordering — currently at foundation phase.
+A REST API for recipe management and meal planning — currently at foundation phase.
 
 ## Quick start
 
