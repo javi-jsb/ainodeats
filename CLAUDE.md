@@ -21,11 +21,21 @@ The emoji prefix is cosmetic and aids visual scanning in the linear squash-merge
 
 ### Branch naming
 
+Spec Kit-driven features create branches automatically via `/speckit-specify`, using sequential numbering:
+
+```
+<NNN>-<short-description>
+```
+
+Examples: `001-project-bootstrap`, `002-ingredient-crud`
+
+Manual branches (hotfixes, chores, or anything outside the Spec Kit flow) follow Conventional-Commits-style naming, with the related issue number:
+
 ```
 <type>/<issue-number>-<short-description>
 ```
 
-Examples: `feat/5-add-order-endpoint`, `fix/12-null-item-crash`, `chore/1-create-claude-md`
+Examples: `feat/5-add-recipe-endpoint`, `fix/12-null-ingredient-crash`, `chore/1-create-claude-md`
 
 ### Co-authorship
 
