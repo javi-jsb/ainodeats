@@ -44,6 +44,9 @@ curl http://localhost:3000/health
 # Full test suite with 100% coverage enforcement
 pnpm test
 
+# TypeScript type checking (no emit)
+pnpm typecheck
+
 # Check formatting and linting violations (no modifications)
 pnpm check
 
