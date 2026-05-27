@@ -1,0 +1,10 @@
+pre-commit:
+  commands:
+    format-check:
+      run: pnpm check
+      glob: "*.{ts,json}"
+
+pre-push:
+  commands:
+    test:
+      run: pnpm test
