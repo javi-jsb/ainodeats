@@ -134,7 +134,7 @@ hooks:
   after_analyze:
   - extension: git
     command: speckit.git.commit
-    enabled: true
+    enabled: false
     optional: true
     prompt: Commit analysis results?
     description: Auto-commit after analysis

@@ -1,0 +1,33 @@
+openapi: "3.1.0"
+info:
+  title: ainodeats API
+  version: "0.0.1"
+
+paths:
+  /health:
+    get:
+      summary: Service health check
+      description: >
+        Confirms the HTTP server is running and accepting requests.
+        Unauthenticated. Intended for infrastructure readiness probes and
+        uptime monitoring. Does not check database connectivity at this phase.
+      operationId: getHealth
+      tags:
+        - Infrastructure
+      responses:
+        "200":
+          description: Service is running
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - status
+                properties:
+                  status:
+                    type: string
+                    enum:
+                      - ok
+                    description: Fixed value confirming the service is operational
+              example:
+                status: ok

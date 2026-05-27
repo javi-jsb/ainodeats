@@ -1,0 +1,28 @@
+{
+  "name": "ainodeats",
+  "version": "0.0.1",
+  "type": "module",
+  "engines": {
+    "node": ">=24.0.0"
+  },
+  "scripts": {
+    "dev": "tsx watch src/main.ts",
+    "test": "vitest run --coverage",
+    "typecheck": "tsc --noEmit",
+    "check": "biome check .",
+    "fix": "biome check --write .",
+    "prepare": "lefthook install"
+  },
+  "dependencies": {
+    "fastify": "5.8.5"
+  },
+  "devDependencies": {
+    "@biomejs/biome": "2.4.15",
+    "@types/node": "25.9.1",
+    "@vitest/coverage-v8": "4.1.7",
+    "lefthook": "2.1.8",
+    "tsx": "4.22.3",
+    "typescript": "6.0.3",
+    "vitest": "4.1.7"
+  }
+}

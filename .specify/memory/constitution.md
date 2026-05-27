@@ -2,6 +2,7 @@
   Sync Impact Report
   ==================
   Version change: [TEMPLATE] → 1.0.0 (initial ratification) → 1.0.1 (add Fastify to stack)
+               → 1.1.0 (add Architecture section: hexagonal + vertical slicing)
 
   Modified principles:
   - All sections: template placeholders → concrete content (initial authoring)
@@ -11,12 +12,13 @@
   - Technology Stack
   - Development Workflow
   - Governance
+  - Architecture (v1.1.0): hexagonal + vertical slicing rules
 
   Removed sections:
   - [SECTION_2_NAME] / [SECTION_3_NAME] generic placeholders replaced
 
   Templates status:
-  - .specify/templates/plan-template.md  ✅ updated — Constitution Check section aligned
+  - .specify/templates/plan-template.md  ✅ no changes required — structure is feature-specific
   - .specify/templates/spec-template.md  ✅ no changes required (template-agnostic)
   - .specify/templates/tasks-template.md ✅ no changes required (template-agnostic)
 
@@ -67,6 +69,50 @@ is genuinely required, it MUST be justified explicitly in the plan's Complexity 
 
 Stack changes require an explicit constitution amendment and version bump.
 
+## Architecture
+
+### Hexagonal Architecture (Ports and Adapters)
+
+The domain is isolated from all external concerns. Domain code MUST NOT depend on
+frameworks, databases, or HTTP libraries. External systems interact with the domain
+through ports (interfaces defined in the domain) and adapters (implementations in
+infrastructure).
+
+- **Domain**: entities, value objects, and port interfaces. No framework imports.
+- **Application**: use cases that orchestrate domain logic. No framework imports.
+- **Infrastructure**: adapters that implement ports — HTTP routes, database repositories,
+  external service clients.
+
+### Vertical Slicing
+
+Code is organized by domain concept (slice), not by technical layer. Each slice is
+self-contained and owns its domain, application, and infrastructure code.
+
+```
+src/
+├── shared/          ← cross-cutting infrastructure (HTTP server factory, shared types)
+└── <slice>/         ← one directory per domain concept
+    ├── domain/
+    ├── application/
+    └── infrastructure/
+```
+
+### Flat-First Rule
+
+Subdirectories within a layer are created only when there are more than two or three
+files of the same adapter type. Start flat; add grouping when it earns its place.
+
+- `application/` — use cases placed directly (no `use-cases/` subfolder)
+- `infrastructure/` — adapters placed directly (no `http/`, `persistence/` subfolders
+  until the layer has enough files to warrant grouping)
+
+Violations of this rule are YAGNI violations (Principle IV) and MUST be justified in
+the plan's Complexity Tracking table.
+
+### Tests
+
+The `tests/` directory mirrors `src/` structure slice by slice.
+
 ## Development Workflow
 
 - **Branch naming**: `<type>/<issue-number>-<short-description>`
@@ -100,4 +146,4 @@ table before implementation begins.
 `CLAUDE.md` is the authoritative runtime development guide and MUST remain in sync with this
 constitution.
 
-**Version**: 1.0.1 | **Ratified**: 2026-05-26 | **Last Amended**: 2026-05-26
+**Version**: 1.1.0 | **Ratified**: 2026-05-26 | **Last Amended**: 2026-05-26
