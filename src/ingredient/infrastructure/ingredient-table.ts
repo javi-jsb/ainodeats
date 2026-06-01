@@ -20,7 +20,7 @@ export const ingredients = pgTable(
 		updatedAt: timestamp('updated_at', { withTimezone: true })
 			.notNull()
 			.defaultNow()
-			.$onUpdate(() => new Date()),
+			.$onUpdate(() => sql`now()`),
 	},
 	(t) => [uniqueIndex('ingredients_name_lower_uniq').on(sql`lower(${t.name})`)],
 );

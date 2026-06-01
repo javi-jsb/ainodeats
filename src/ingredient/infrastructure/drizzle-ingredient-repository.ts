@@ -105,14 +105,14 @@ export class DrizzleIngredientRepository implements IngredientRepository {
 		try {
 			const [row] = await this.db
 				.update(ingredients)
-				.set({ ...updateValues, updatedAt: new Date() })
+				.set(updateValues)
 				.where(sql`${ingredients.id} = ${id}::uuid`)
 				.returning();
 			if (!row) throw new IngredientNotFound(id);
 			return rowToIngredient(row);
 		} catch (err) {
 			if (isUniqueViolation(err)) {
-				throw new IngredientNameConflict(patch.name ?? '');
+				throw new IngredientNameConflict(patch.name as string);
 			}
 			throw err;
 		}
