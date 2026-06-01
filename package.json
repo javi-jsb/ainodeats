@@ -11,15 +11,27 @@
     "typecheck": "tsc --noEmit",
     "check": "biome check .",
     "fix": "biome check --write .",
-    "prepare": "lefthook install"
+    "prepare": "lefthook install",
+    "db:generate": "drizzle-kit generate",
+    "db:migrate": "drizzle-kit migrate"
   },
   "dependencies": {
-    "fastify": "5.8.5"
+    "@fastify/swagger": "9.7.0",
+    "@fastify/swagger-ui": "5.2.6",
+    "@fastify/type-provider-typebox": "6.1.0",
+    "@sinclair/typebox": "0.34.49",
+    "drizzle-orm": "0.45.2",
+    "fastify": "5.8.5",
+    "fastify-plugin": "5.1.0",
+    "pg": "8.21.0",
+    "uuidv7": "1.2.1"
   },
   "devDependencies": {
     "@biomejs/biome": "2.4.15",
     "@types/node": "25.9.1",
+    "@types/pg": "8.20.0",
     "@vitest/coverage-v8": "4.1.7",
+    "drizzle-kit": "0.31.10",
     "lefthook": "2.1.8",
     "tsx": "4.22.3",
     "typescript": "6.0.3",
