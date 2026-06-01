@@ -3,10 +3,6 @@ import fastifySwaggerUi from '@fastify/swagger-ui';
 import type { TypeBoxTypeProvider } from '@fastify/type-provider-typebox';
 import Fastify, { type FastifyError, type FastifyInstance } from 'fastify';
 import { healthRoute } from '../../health/infrastructure/health.route.js';
-import {
-	IngredientNameConflict,
-	IngredientNotFound,
-} from '../../ingredient/domain/errors.js';
 import { ingredientRoutes } from '../../ingredient/infrastructure/ingredient-routes.js';
 import { dbPlugin } from './db.js';
 
@@ -23,35 +19,49 @@ export async function buildApp(): Promise<FastifyInstance> {
 	await app.register(healthRoute);
 	await app.register(ingredientRoutes);
 
-	app.setErrorHandler((error: FastifyError | Error, _request, reply) => {
-		if ('validation' in error && error.validation) {
-			return reply.status(400).send({
-				statusCode: 400,
-				error: 'Bad Request',
-				message: error.message,
+	app.setErrorHandler(
+		(
+			error: (FastifyError | Error) & { statusCode?: number },
+			_request,
+			reply,
+		) => {
+			if ('validation' in error && error.validation) {
+				return reply.status(400).send({
+					statusCode: 400,
+					error: 'Bad Request',
+					message: error.message,
+				});
+			}
+			const status = error.statusCode;
+			if (status === 400) {
+				return reply.status(400).send({
+					statusCode: 400,
+					error: 'Bad Request',
+					message: error.message,
+				});
+			}
+			if (status === 404) {
+				return reply.status(404).send({
+					statusCode: 404,
+					error: 'Not Found',
+					message: error.message,
+				});
+			}
+			if (status === 409) {
+				return reply.status(409).send({
+					statusCode: 409,
+					error: 'Conflict',
+					message: error.message,
+				});
+			}
+			app.log.error(error);
+			return reply.status(500).send({
+				statusCode: 500,
+				error: 'Internal Server Error',
+				message: 'An unexpected error occurred',
 			});
-		}
-		if (error instanceof IngredientNotFound) {
-			return reply.status(404).send({
-				statusCode: 404,
-				error: 'Not Found',
-				message: error.message,
-			});
-		}
-		if (error instanceof IngredientNameConflict) {
-			return reply.status(409).send({
-				statusCode: 409,
-				error: 'Conflict',
-				message: error.message,
-			});
-		}
-		app.log.error(error);
-		return reply.status(500).send({
-			statusCode: 500,
-			error: 'Internal Server Error',
-			message: 'An unexpected error occurred',
-		});
-	});
+		},
+	);
 
 	return app;
 }
