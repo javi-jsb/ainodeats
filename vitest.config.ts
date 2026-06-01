@@ -3,10 +3,7 @@ import { defineConfig } from "vitest/config";
 export default defineConfig({
   test: {
     globalSetup: ["tests/setup/global-setup.ts"],
-    pool: "forks",
-    poolOptions: {
-      forks: { singleFork: true },
-    },
+    fileParallelism: false,
     coverage: {
       provider: "v8",
       include: ["src/**/*.ts"],
