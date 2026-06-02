@@ -1,0 +1,220 @@
+openapi: 3.1.0
+info:
+  title: ainodeats — Ingredient API
+  version: 1.0.0
+  description: >
+    CRUD for the Ingredient resource (recipe domain). No authentication at this
+    phase; single shared catalog. Names are unique case-insensitively (after
+    trimming). This contract is mirrored by TypeBox schemas in the route layer.
+
+servers:
+  - url: http://localhost:3000
+    description: Local development
+
+paths:
+  /ingredients:
+    post:
+      summary: Register a new ingredient
+      operationId: createIngredient
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/NewIngredient"
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Ingredient"
+        "400":
+          $ref: "#/components/responses/ValidationError"
+        "409":
+          $ref: "#/components/responses/NameConflict"
+    get:
+      summary: List ingredients (optional category filter and partial-name search)
+      operationId: listIngredients
+      parameters:
+        - name: category
+          in: query
+          required: false
+          description: Exact, case-insensitive category match. Empty/whitespace = no filter.
+          schema:
+            type: string
+            maxLength: 50
+        - name: name
+          in: query
+          required: false
+          description: Case-insensitive substring search on name. Empty/whitespace = no search.
+          schema:
+            type: string
+            maxLength: 100
+      responses:
+        "200":
+          description: >
+            Matching ingredients, ordered by name ascending (case-insensitive).
+            Empty array when nothing matches (not an error).
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Ingredient"
+        "400":
+          $ref: "#/components/responses/ValidationError"
+
+  /ingredients/{id}:
+    parameters:
+      - name: id
+        in: path
+        required: true
+        description: Ingredient UUID. Malformed UUID → 400 (not 404).
+        schema:
+          type: string
+          format: uuid
+    get:
+      summary: Get an ingredient by id
+      operationId: getIngredient
+      responses:
+        "200":
+          description: The ingredient
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Ingredient"
+        "400":
+          $ref: "#/components/responses/ValidationError"
+        "404":
+          $ref: "#/components/responses/NotFound"
+    patch:
+      summary: Partially update an ingredient
+      operationId: updateIngredient
+      description: >
+        Only supplied fields change; omitted fields are untouched. At least one
+        field must be provided. Supplied values pass the same validation as create.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateIngredient"
+      responses:
+        "200":
+          description: The updated ingredient
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Ingredient"
+        "400":
+          $ref: "#/components/responses/ValidationError"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "409":
+          $ref: "#/components/responses/NameConflict"
+    delete:
+      summary: Delete an ingredient (hard delete)
+      operationId: deleteIngredient
+      responses:
+        "204":
+          description: Deleted; no content
+        "400":
+          $ref: "#/components/responses/ValidationError"
+        "404":
+          $ref: "#/components/responses/NotFound"
+
+components:
+  schemas:
+    Ingredient:
+      type: object
+      additionalProperties: false
+      required: [id, name, unit, category, createdAt, updatedAt]
+      properties:
+        id:
+          type: string
+          format: uuid
+          description: UUID v7
+        name:
+          type: string
+          minLength: 1
+          maxLength: 100
+        unit:
+          type: string
+          minLength: 1
+          maxLength: 50
+        category:
+          type: string
+          minLength: 1
+          maxLength: 50
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+    NewIngredient:
+      type: object
+      additionalProperties: false
+      required: [name, unit, category]
+      properties:
+        name:
+          type: string
+          minLength: 1
+          maxLength: 100
+          description: Trimmed server-side before validation/storage.
+        unit:
+          type: string
+          minLength: 1
+          maxLength: 50
+        category:
+          type: string
+          minLength: 1
+          maxLength: 50
+    UpdateIngredient:
+      type: object
+      additionalProperties: false
+      minProperties: 1
+      properties:
+        name:
+          type: string
+          minLength: 1
+          maxLength: 100
+        unit:
+          type: string
+          minLength: 1
+          maxLength: 50
+        category:
+          type: string
+          minLength: 1
+          maxLength: 50
+    Error:
+      type: object
+      required: [statusCode, error, message]
+      properties:
+        statusCode:
+          type: integer
+        error:
+          type: string
+        message:
+          type: string
+
+  responses:
+    ValidationError:
+      description: Request failed schema validation (missing/invalid fields, malformed UUID).
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Error"
+    NotFound:
+      description: No ingredient exists with the requested id.
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Error"
+    NameConflict:
+      description: An ingredient with the same name (case-insensitive) already exists.
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Error"

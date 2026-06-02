@@ -21,11 +21,21 @@ The emoji prefix is cosmetic and aids visual scanning in the linear squash-merge
 
 ### Branch naming
 
+Spec Kit-driven features create branches automatically via `/speckit-specify`, using sequential numbering:
+
+```
+<NNN>-<short-description>
+```
+
+Examples: `001-project-bootstrap`, `002-ingredient-crud`
+
+Manual branches (hotfixes, chores, or anything outside the Spec Kit flow) follow Conventional-Commits-style naming, with the related issue number:
+
 ```
 <type>/<issue-number>-<short-description>
 ```
 
-Examples: `feat/5-add-order-endpoint`, `fix/12-null-item-crash`, `chore/1-create-claude-md`
+Examples: `feat/5-add-recipe-endpoint`, `fix/12-null-ingredient-crash`, `chore/1-create-claude-md`
 
 ### Co-authorship
 
@@ -59,14 +69,46 @@ All public-facing content must be written in **English**: issues, PR titles and 
 
 - **Runtime**: Node.js + TypeScript (strict mode)
 - **Framework**: Fastify — schema-first validation (JSON Schema / TypeBox), TypeScript-native
-- **Database**: PostgreSQL
+- **Database**: PostgreSQL via `drizzle-orm` (infrastructure layer only) + `drizzle-kit` migrations
 - **API style**: REST
+- **API docs**: Swagger UI served at `/docs` (generated from route TypeBox schemas)
 
 Stack decisions are governed by the project constitution at `.specify/memory/constitution.md`.
 Changes require a constitution amendment.
 
+## Database & Migrations
+
+Connection is read from `DATABASE_URL` (required env var). Local dev:
+
+```bash
+export DATABASE_URL="postgres://ainodeats:ainodeats@localhost:5432/ainodeats"
+docker compose up -d postgres
+pnpm db:migrate      # apply migrations
+pnpm dev             # start app → http://localhost:3000, docs at /docs
+```
+
+To generate a new migration after changing a Drizzle schema file:
+
+```bash
+pnpm db:generate     # writes drizzle/<version>_<name>.sql
+# review the SQL, then commit it
+pnpm db:migrate      # apply to dev DB
+```
+
+Tests use a dedicated database `ainodeats_test` (created automatically by Vitest `globalSetup`).
+
+## Testing
+
+```bash
+docker compose up -d postgres
+pnpm test            # vitest run --coverage (100% threshold enforced)
+```
+
+Integration tests hit the real `ainodeats_test` database via Fastify `inject()`. Test files run
+sequentially (`fileParallelism: false`) to prevent `truncateAll()` race conditions across files.
+
 <!-- SPECKIT START -->
 For additional context about technologies to be used, project structure,
 shell commands, and other important information, read the current plan
-at `specs/001-project-bootstrap/plan.md`.
+at `specs/002-ingredient-crud/plan.md`.
 <!-- SPECKIT END -->

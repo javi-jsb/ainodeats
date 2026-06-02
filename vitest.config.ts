@@ -2,10 +2,12 @@ import { defineConfig } from "vitest/config";
 
 export default defineConfig({
   test: {
+    globalSetup: ["tests/setup/global-setup.ts"],
+    fileParallelism: false,
     coverage: {
       provider: "v8",
       include: ["src/**/*.ts"],
-      exclude: ["src/main.ts"],
+      exclude: ["src/main.ts", "src/ingredient/infrastructure/ingredient-table.ts"],
       thresholds: {
         lines: 100,
         branches: 100,
