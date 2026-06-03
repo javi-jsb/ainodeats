@@ -1,5 +1,6 @@
 import { sql } from 'drizzle-orm';
 import {
+	index,
 	pgTable,
 	timestamp,
 	uniqueIndex,
@@ -25,5 +26,8 @@ export const ingredients = pgTable(
 			.defaultNow()
 			.$onUpdate(() => sql`now()`),
 	},
-	(t) => [uniqueIndex('ingredients_name_lower_uniq').on(sql`lower(${t.name})`)],
+	(t) => [
+		uniqueIndex('ingredients_name_lower_uniq').on(sql`lower(${t.name})`),
+		index('ingredients_category_id_idx').on(t.categoryId),
+	],
 );

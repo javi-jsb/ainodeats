@@ -12,8 +12,15 @@
     {
       "idx": 1,
       "version": "7",
-      "when": 1748822400000,
+      "when": 1780297500000,
       "tag": "0001_ingredient_categories",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1780501880431,
+      "tag": "0002_ingredient_category_id_index",
       "breakpoints": true
     }
   ]
