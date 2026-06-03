@@ -1,6 +1,7 @@
 import { and, asc, eq, ilike, sql } from 'drizzle-orm';
 import type { NodePgDatabase } from 'drizzle-orm/node-postgres';
 import { ingredientCategories } from '../../ingredient-category/infrastructure/ingredient-category-table.js';
+import { hasPgCode } from '../../shared/infrastructure/pg-errors.js';
 import {
 	CategoryReferenceNotFound,
 	IngredientNameConflict,
@@ -30,21 +31,6 @@ function joinRowToIngredient(row: {
 		createdAt: row.createdAt,
 		updatedAt: row.updatedAt,
 	};
-}
-
-function hasPgCode(err: unknown, code: string): boolean {
-	if (
-		typeof err === 'object' &&
-		err !== null &&
-		'code' in err &&
-		(err as { code: string }).code === code
-	) {
-		return true;
-	}
-	if (typeof err === 'object' && err !== null && 'cause' in err) {
-		return hasPgCode((err as { cause: unknown }).cause, code);
-	}
-	return false;
 }
 
 export class DrizzleIngredientRepository implements IngredientRepository {

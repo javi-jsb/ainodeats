@@ -1,5 +1,6 @@
 import { asc, sql } from 'drizzle-orm';
 import type { NodePgDatabase } from 'drizzle-orm/node-postgres';
+import { hasPgCode } from '../../shared/infrastructure/pg-errors.js';
 import {
 	CategoryInUse,
 	CategoryNameConflict,
@@ -16,23 +17,6 @@ type Row = typeof ingredientCategories.$inferSelect;
 
 function rowToCategory(row: Row): IngredientCategory {
 	return { id: row.id, name: row.name };
-}
-
-function hasCode(err: unknown, code: string): boolean {
-	return (
-		typeof err === 'object' &&
-		err !== null &&
-		'code' in err &&
-		(err as { code: string }).code === code
-	);
-}
-
-function hasPgCode(err: unknown, code: string): boolean {
-	if (hasCode(err, code)) return true;
-	if (typeof err === 'object' && err !== null && 'cause' in err) {
-		return hasCode((err as { cause: unknown }).cause, code);
-	}
-	return false;
 }
 
 export class DrizzleIngredientCategoryRepository
