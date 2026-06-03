@@ -8,6 +8,13 @@
       "when": 1780297406238,
       "tag": "0000_dazzling_firelord",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1748822400000,
+      "tag": "0001_ingredient_categories",
+      "breakpoints": true
     }
   ]
 }
