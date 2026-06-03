@@ -1,0 +1,194 @@
+openapi: 3.1.0
+info:
+  title: ainodeats — Ingredient Category API
+  version: 1.0.0
+  description: >
+    CRUD for the IngredientCategory resource. Categories are named groupings for
+    ingredients (e.g. "dairy", "grain"). Names are unique case-insensitively (after
+    trimming). A category cannot be deleted while it is referenced by any ingredient.
+    This contract is mirrored by TypeBox schemas in the route layer.
+
+servers:
+  - url: http://localhost:3000
+    description: Local development
+
+paths:
+  /ingredient-categories:
+    post:
+      summary: Create a new ingredient category
+      operationId: createIngredientCategory
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/NewIngredientCategory"
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/IngredientCategory"
+        "400":
+          $ref: "#/components/responses/ValidationError"
+        "409":
+          $ref: "#/components/responses/NameConflict"
+
+    get:
+      summary: List all ingredient categories ordered alphabetically by name
+      operationId: listIngredientCategories
+      responses:
+        "200":
+          description: >
+            All defined categories, ordered A→Z by name (case-insensitive).
+            Returns an empty array when no categories exist.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/IngredientCategory"
+
+  /ingredient-categories/{id}:
+    parameters:
+      - name: id
+        in: path
+        required: true
+        description: Category UUID. A malformed UUID returns 400, not 404.
+        schema:
+          type: string
+          format: uuid
+
+    get:
+      summary: Get a single ingredient category by id
+      operationId: getIngredientCategory
+      responses:
+        "200":
+          description: The category
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/IngredientCategory"
+        "400":
+          $ref: "#/components/responses/ValidationError"
+        "404":
+          $ref: "#/components/responses/NotFound"
+
+    patch:
+      summary: Rename an existing ingredient category
+      operationId: updateIngredientCategory
+      description: >
+        Replaces the category name. The new name undergoes the same uniqueness and
+        validation rules as on create.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateIngredientCategory"
+      responses:
+        "200":
+          description: The updated category
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/IngredientCategory"
+        "400":
+          $ref: "#/components/responses/ValidationError"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "409":
+          $ref: "#/components/responses/NameConflict"
+
+    delete:
+      summary: Delete an ingredient category
+      operationId: deleteIngredientCategory
+      description: >
+        Hard delete. Rejected with 409 if one or more ingredients reference this
+        category. The error message identifies the conflict.
+      responses:
+        "204":
+          description: Deleted; no content
+        "400":
+          $ref: "#/components/responses/ValidationError"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "409":
+          $ref: "#/components/responses/CategoryInUse"
+
+components:
+  schemas:
+    IngredientCategory:
+      type: object
+      additionalProperties: false
+      required: [id, name]
+      properties:
+        id:
+          type: string
+          format: uuid
+          description: UUID v7, system-assigned
+        name:
+          type: string
+          minLength: 1
+          maxLength: 100
+          description: Stored as provided; compared case-insensitively for uniqueness
+
+    NewIngredientCategory:
+      type: object
+      additionalProperties: false
+      required: [name]
+      properties:
+        name:
+          type: string
+          minLength: 1
+          maxLength: 100
+          description: Trimmed server-side before validation and storage
+
+    UpdateIngredientCategory:
+      type: object
+      additionalProperties: false
+      required: [name]
+      properties:
+        name:
+          type: string
+          minLength: 1
+          maxLength: 100
+          description: New name. Trimmed server-side before validation and storage
+
+    Error:
+      type: object
+      required: [statusCode, error, message]
+      properties:
+        statusCode:
+          type: integer
+        error:
+          type: string
+        message:
+          type: string
+
+  responses:
+    ValidationError:
+      description: Request failed schema validation (missing/invalid fields, malformed UUID).
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Error"
+    NotFound:
+      description: No category exists with the requested id.
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Error"
+    NameConflict:
+      description: A category with the same name (case-insensitive) already exists.
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Error"
+    CategoryInUse:
+      description: The category is referenced by one or more ingredients and cannot be deleted.
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Error"
