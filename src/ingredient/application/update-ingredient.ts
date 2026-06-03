@@ -4,7 +4,7 @@ import type { IngredientRepository } from '../domain/ingredient-repository.js';
 export interface UpdateIngredientCommand {
 	name?: string;
 	unit?: string;
-	category?: string;
+	categoryId?: string;
 }
 
 export async function updateIngredient(

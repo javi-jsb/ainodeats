@@ -6,6 +6,7 @@ import {
 	uuid,
 	varchar,
 } from 'drizzle-orm/pg-core';
+import { ingredientCategories } from '../../ingredient-category/infrastructure/ingredient-category-table.js';
 
 export const ingredients = pgTable(
 	'ingredients',
@@ -13,7 +14,9 @@ export const ingredients = pgTable(
 		id: uuid('id').primaryKey(),
 		name: varchar('name', { length: 100 }).notNull(),
 		unit: varchar('unit', { length: 50 }).notNull(),
-		category: varchar('category', { length: 50 }).notNull(),
+		categoryId: uuid('category_id')
+			.notNull()
+			.references(() => ingredientCategories.id),
 		createdAt: timestamp('created_at', { withTimezone: true })
 			.notNull()
 			.defaultNow(),

@@ -2,7 +2,7 @@ export interface Ingredient {
 	id: string;
 	name: string;
 	unit: string;
-	category: string;
+	category: { id: string; name: string };
 	createdAt: Date;
 	updatedAt: Date;
 }
@@ -12,13 +12,13 @@ const CONTROL_CHAR_RE = /\p{Cc}/u;
 export interface IngredientFields {
 	name: string;
 	unit: string;
-	category: string;
+	categoryId: string;
 }
 
 export interface NormalizedFields {
 	name: string;
 	unit: string;
-	category: string;
+	categoryId: string;
 }
 
 export function normalizeIngredientFields(
@@ -27,14 +27,14 @@ export function normalizeIngredientFields(
 	return {
 		name: validateField(fields.name, 'name', 100),
 		unit: validateField(fields.unit, 'unit', 50),
-		category: validateField(fields.category, 'category', 50),
+		categoryId: fields.categoryId,
 	};
 }
 
 export interface PartialIngredientFields {
 	name?: string;
 	unit?: string;
-	category?: string;
+	categoryId?: string;
 }
 
 export function normalizePartialFields(
@@ -45,8 +45,7 @@ export function normalizePartialFields(
 		result.name = validateField(fields.name, 'name', 100);
 	if (fields.unit !== undefined)
 		result.unit = validateField(fields.unit, 'unit', 50);
-	if (fields.category !== undefined)
-		result.category = validateField(fields.category, 'category', 50);
+	if (fields.categoryId !== undefined) result.categoryId = fields.categoryId;
 	return result;
 }
 

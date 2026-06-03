@@ -15,3 +15,12 @@ export class IngredientNameConflict extends Error {
 		this.name = 'IngredientNameConflict';
 	}
 }
+
+export class CategoryReferenceNotFound extends Error {
+	readonly statusCode = 422;
+
+	constructor(public readonly categoryId: string) {
+		super(`Ingredient category with id "${categoryId}" does not exist`);
+		this.name = 'CategoryReferenceNotFound';
+	}
+}
