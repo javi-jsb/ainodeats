@@ -9,6 +9,7 @@ import Fastify, {
 } from 'fastify';
 import { healthRoute } from '../../health/infrastructure/health.route.js';
 import { ingredientRoutes } from '../../ingredient/infrastructure/ingredient-routes.js';
+import { ingredientCategoryRoutes } from '../../ingredient-category/infrastructure/ingredient-category-routes.js';
 import { dbPlugin } from './db.js';
 
 export function handleError(
@@ -49,6 +50,14 @@ export function handleError(
 		});
 		return;
 	}
+	if (status === 422) {
+		reply.status(422).send({
+			statusCode: 422,
+			error: 'Unprocessable Entity',
+			message: error.message,
+		});
+		return;
+	}
 	reply.log.error(error);
 	reply.status(500).send({
 		statusCode: 500,
@@ -68,6 +77,7 @@ export async function buildApp(): Promise<FastifyInstance> {
 	await app.register(fastifySwaggerUi, { routePrefix: '/docs' });
 	await app.register(dbPlugin);
 	await app.register(healthRoute);
+	await app.register(ingredientCategoryRoutes);
 	await app.register(ingredientRoutes);
 
 	app.setErrorHandler(handleError);
