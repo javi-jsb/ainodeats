@@ -80,7 +80,7 @@ export const ingredientRoutes: FastifyPluginAsync = async (app) => {
 		async (request, reply) => {
 			const repo = new DrizzleIngredientRepository(request.server.db);
 			const items = await listIngredients(repo, {
-				category: request.query.category,
+				categoryId: request.query.categoryId,
 				name: request.query.name,
 			});
 			return reply.send(items.map(toDto));

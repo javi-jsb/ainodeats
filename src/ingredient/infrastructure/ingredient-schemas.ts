@@ -36,7 +36,7 @@ export const IdParamSchema = Type.Object({
 });
 
 export const ListQuerySchema = Type.Object({
-	category: Type.Optional(Type.String({ maxLength: 100 })),
+	categoryId: Type.Optional(Type.String({ format: 'uuid' })),
 	name: Type.Optional(Type.String({ maxLength: 100 })),
 });
 
