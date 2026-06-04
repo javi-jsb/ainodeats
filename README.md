@@ -75,5 +75,6 @@ Tests mirror `src/` structure under `tests/`.
 
 ## Documentation
 
+- [`PRODUCT.md`](PRODUCT.md) — product brief: the fictional client and decision heuristics that drive design choices
 - [`CLAUDE.md`](CLAUDE.md) — development conventions, commit format, branch naming, PR rules
 - [`specs/`](specs/) — feature specifications, implementation plans, and task lists
