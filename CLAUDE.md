@@ -63,6 +63,8 @@ All public-facing content must be written in **English**: issues, PR titles and 
 
 **Debate before executing.** If something seems wrong, missing, inconsistent, or improvable, raise it and discuss options before proceeding. Do not execute blindly.
 
+**Derive design decisions from the product.** This is a learning project with no real client, so design questions can easily turn into abstract debates. Before reaching for a pattern, consult [`PRODUCT.md`](PRODUCT.md) — it defines a single committed fictional client and decision heuristics. If that client doesn't need it, it's YAGNI.
+
 **Keep this file up to date.** If during development a decision is made, a convention is added, or anything worth documenting changes, update `CLAUDE.md` accordingly in the same PR where the change happens.
 
 ## Technology Stack
