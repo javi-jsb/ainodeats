@@ -8,7 +8,7 @@ export interface IngredientRepository {
 	insert(ingredient: Ingredient): Promise<IngredientView>;
 	findById(id: string): Promise<IngredientView | null>;
 	findMany(filter: {
-		category?: string;
+		categoryId?: string;
 		name?: string;
 	}): Promise<IngredientView[]>;
 	update(id: string, patch: PartialIngredientFields): Promise<IngredientView>;

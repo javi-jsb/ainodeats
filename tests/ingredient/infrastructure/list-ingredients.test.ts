@@ -56,7 +56,7 @@ describe('GET /ingredients', () => {
 		expect(items.map((i) => i.name)).toEqual(['apple', 'Banana', 'Zucchini']);
 	});
 
-	test('category filter — exact match by category name, case-insensitive (JOIN-based)', async () => {
+	test('categoryId filter — returns only ingredients in that category', async () => {
 		await create(app, {
 			name: 'Carrot',
 			unit: 'units',
@@ -71,12 +71,23 @@ describe('GET /ingredients', () => {
 
 		const res = await app.inject({
 			method: 'GET',
-			url: '/ingredients?category=VEGETABLE',
+			url: `/ingredients?categoryId=${vegetableId}`,
 		});
 		expect(res.statusCode).toBe(200);
 		const items = res.json<{ name: string }[]>();
 		expect(items).toHaveLength(2);
 		expect(items.map((i) => i.name)).toEqual(['Broccoli', 'Carrot']);
+	});
+
+	test('categoryId filter — unmatched id returns empty array', async () => {
+		await create(app, { name: 'Apple', unit: 'units', categoryId: fruitId });
+
+		const res = await app.inject({
+			method: 'GET',
+			url: '/ingredients?categoryId=01907f00-0000-7000-8000-000000000099',
+		});
+		expect(res.statusCode).toBe(200);
+		expect(res.json()).toEqual([]);
 	});
 
 	test('each ingredient response embeds category { id, name }', async () => {
@@ -115,7 +126,7 @@ describe('GET /ingredients', () => {
 		expect(items.map((i) => i.name)).toEqual(['Cherry Tomato', 'Tomato']);
 	});
 
-	test('combined category + name filters (AND)', async () => {
+	test('combined categoryId + name filters (AND)', async () => {
 		await create(app, {
 			name: 'Tomato',
 			unit: 'units',
@@ -140,7 +151,7 @@ describe('GET /ingredients', () => {
 
 		const res = await app.inject({
 			method: 'GET',
-			url: '/ingredients?category=vegetable&name=to',
+			url: `/ingredients?categoryId=${vegetableId}&name=to`,
 		});
 		expect(res.statusCode).toBe(200);
 		const items = res.json<{ name: string }[]>();
@@ -151,23 +162,6 @@ describe('GET /ingredients', () => {
 		const res = await app.inject({ method: 'GET', url: '/ingredients' });
 		expect(res.statusCode).toBe(200);
 		expect(res.json()).toEqual([]);
-	});
-
-	test('empty/whitespace-only category param = no filter', async () => {
-		await create(app, { name: 'Apple', unit: 'units', categoryId: fruitId });
-		await create(app, {
-			name: 'Carrot',
-			unit: 'units',
-			categoryId: vegetableId,
-		});
-
-		const res = await app.inject({
-			method: 'GET',
-			url: '/ingredients?category=   ',
-		});
-		expect(res.statusCode).toBe(200);
-		const items = res.json<{ name: string }[]>();
-		expect(items).toHaveLength(2);
 	});
 
 	test('empty/whitespace-only name param = no filter', async () => {
@@ -187,10 +181,10 @@ describe('GET /ingredients', () => {
 		expect(items).toHaveLength(2);
 	});
 
-	test('400 — category param exceeds maxLength', async () => {
+	test('400 — malformed categoryId (not a uuid)', async () => {
 		const res = await app.inject({
 			method: 'GET',
-			url: `/ingredients?category=${'x'.repeat(101)}`,
+			url: '/ingredients?categoryId=not-a-uuid',
 		});
 		expect(res.statusCode).toBe(400);
 	});

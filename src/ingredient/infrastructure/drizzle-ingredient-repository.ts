@@ -87,13 +87,13 @@ export class DrizzleIngredientRepository implements IngredientRepository {
 	}
 
 	async findMany(filter: {
-		category?: string;
+		categoryId?: string;
 		name?: string;
 	}): Promise<IngredientView[]> {
 		const conditions = [];
-		if (filter.category) {
+		if (filter.categoryId) {
 			conditions.push(
-				sql`lower(${ingredientCategories.name}) = lower(${filter.category})`,
+				sql`${ingredients.categoryId} = ${filter.categoryId}::uuid`,
 			);
 		}
 		if (filter.name) {
