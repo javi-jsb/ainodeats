@@ -1,6 +1,9 @@
 import { asc, sql } from 'drizzle-orm';
 import type { NodePgDatabase } from 'drizzle-orm/node-postgres';
-import { hasPgCode } from '../../shared/infrastructure/pg-errors.js';
+import {
+	hasPgCode,
+	PgErrorCode,
+} from '../../shared/infrastructure/pg-errors.js';
 import {
 	CategoryInUse,
 	CategoryNameConflict,
@@ -32,7 +35,7 @@ export class DrizzleIngredientCategoryRepository
 				.returning();
 			return rowToCategory(row);
 		} catch (err) {
-			if (hasPgCode(err, '23505')) {
+			if (hasPgCode(err, PgErrorCode.UniqueViolation)) {
 				throw new CategoryNameConflict(category.name);
 			}
 			throw err;
@@ -68,7 +71,7 @@ export class DrizzleIngredientCategoryRepository
 			if (!row) throw new CategoryNotFound(id);
 			return rowToCategory(row);
 		} catch (err) {
-			if (hasPgCode(err, '23505')) {
+			if (hasPgCode(err, PgErrorCode.UniqueViolation)) {
 				throw new CategoryNameConflict(fields.name);
 			}
 			throw err;
@@ -83,7 +86,7 @@ export class DrizzleIngredientCategoryRepository
 				.returning({ id: ingredientCategories.id });
 			if (result.length === 0) throw new CategoryNotFound(id);
 		} catch (err) {
-			if (hasPgCode(err, '23503')) {
+			if (hasPgCode(err, PgErrorCode.ForeignKeyViolation)) {
 				throw new CategoryInUse(id);
 			}
 			throw err;

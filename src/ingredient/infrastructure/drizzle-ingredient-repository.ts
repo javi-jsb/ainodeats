@@ -1,7 +1,10 @@
 import { and, asc, eq, ilike, sql } from 'drizzle-orm';
 import type { NodePgDatabase } from 'drizzle-orm/node-postgres';
 import { ingredientCategories } from '../../ingredient-category/infrastructure/ingredient-category-table.js';
-import { hasPgCode } from '../../shared/infrastructure/pg-errors.js';
+import {
+	hasPgCode,
+	PgErrorCode,
+} from '../../shared/infrastructure/pg-errors.js';
 import {
 	CategoryReferenceNotFound,
 	IngredientNameConflict,
@@ -67,10 +70,10 @@ export class DrizzleIngredientRepository implements IngredientRepository {
 			}
 			return view;
 		} catch (err) {
-			if (hasPgCode(err, '23505')) {
+			if (hasPgCode(err, PgErrorCode.UniqueViolation)) {
 				throw new IngredientNameConflict(ingredient.name);
 			}
-			if (hasPgCode(err, '23503')) {
+			if (hasPgCode(err, PgErrorCode.ForeignKeyViolation)) {
 				throw new CategoryReferenceNotFound(ingredient.categoryId);
 			}
 			throw err;
@@ -143,10 +146,10 @@ export class DrizzleIngredientRepository implements IngredientRepository {
 			}
 			return view;
 		} catch (err) {
-			if (hasPgCode(err, '23505')) {
+			if (hasPgCode(err, PgErrorCode.UniqueViolation)) {
 				throw new IngredientNameConflict(patch.name as string);
 			}
-			if (hasPgCode(err, '23503')) {
+			if (hasPgCode(err, PgErrorCode.ForeignKeyViolation)) {
 				throw new CategoryReferenceNotFound(patch.categoryId as string);
 			}
 			throw err;
