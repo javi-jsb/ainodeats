@@ -94,6 +94,16 @@ Working summary:
   the database **foreign key as the authoritative atomic backstop**. How far to split read vs.
   write models is a per-feature YAGNI call — no separate query stack is mandated.
 
+## API Conventions
+
+- **Strict input validation**: request bodies reject unknown fields with `400`
+  (`ajv removeAdditional: false` in the server factory, `src/shared/infrastructure/app.ts`).
+  Schemas declaring `additionalProperties: false` are enforced, not silently stripped — this
+  catches client typos and keeps the contract honest (Principle I). Decision (#13): ainodeats
+  is a first-party API with a single committed client (`PRODUCT.md`), so strict input wins
+  over lenient schema-evolution tolerance. Note this applies to bodies; query schemas that
+  don't declare `additionalProperties: false` still tolerate extras.
+
 ## Database & Migrations
 
 Connection is read from `DATABASE_URL` (required env var). Local dev:
