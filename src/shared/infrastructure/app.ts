@@ -67,7 +67,13 @@ export function handleError(
 }
 
 export async function buildApp(): Promise<FastifyInstance> {
-	const app = Fastify({ logger: true }).withTypeProvider<TypeBoxTypeProvider>();
+	// removeAdditional defaults to true in Fastify's ajv, which silently strips
+	// unknown body fields; disable it so `additionalProperties: false` schemas
+	// reject them with a 400 (honors the API contract — see issue #13).
+	const app = Fastify({
+		logger: true,
+		ajv: { customOptions: { removeAdditional: false } },
+	}).withTypeProvider<TypeBoxTypeProvider>();
 
 	await app.register(fastifySwagger, {
 		openapi: {
