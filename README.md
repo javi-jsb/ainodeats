@@ -23,6 +23,24 @@ pnpm install
 
 Installs all dependencies with exact versions from the lockfile. Git hooks (pre-commit format check, pre-push test run) are registered automatically via the `prepare` script.
 
+### Database
+
+The app reads its connection string from `DATABASE_URL`. Start PostgreSQL and apply migrations:
+
+```sh
+export DATABASE_URL="postgres://ainodeats:ainodeats@localhost:5432/ainodeats"
+docker compose up -d postgres
+pnpm db:migrate
+```
+
+Optionally, seed a fresh database with sample data for manual testing:
+
+```sh
+pnpm db:seed
+```
+
+`pnpm db:seed` inserts a few ingredient categories and ingredients (referencing categories by id). It is **dev-only and non-destructive**: it expects a fresh, migrated database and aborts if categories already exist — re-seed against an empty DB.
+
 ### Run
 
 ```sh

@@ -115,6 +115,17 @@ pnpm db:migrate      # apply migrations
 pnpm dev             # start app → http://localhost:3000, docs at /docs
 ```
 
+To seed a fresh local database with sample data (manual testing / demos):
+
+```bash
+pnpm db:seed         # inserts sample categories + ingredients (dev-only)
+```
+
+`scripts/seed.ts` writes through the application use cases (so domain invariants
+run) and is **non-destructive**: it expects a fresh, migrated database and aborts
+if categories already exist. It lives under `scripts/` (tooling, outside `src/`),
+so it is excluded from the coverage gate. `scripts/**` is type-checked and linted.
+
 To generate a new migration after changing a Drizzle schema file:
 
 ```bash
