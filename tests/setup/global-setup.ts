@@ -6,7 +6,7 @@ import pg from 'pg';
 
 const TEST_DB = 'ainodeats_test';
 const BASE_URL =
-	process.env['DATABASE_URL'] ??
+	process.env.DATABASE_URL ??
 	'postgres://ainodeats:ainodeats@localhost:5432/ainodeats';
 
 function buildUrl(db: string): string {
@@ -42,5 +42,5 @@ export async function setup(): Promise<void> {
 		await testPool.end();
 	}
 
-	process.env['DATABASE_URL'] = buildUrl(TEST_DB);
+	process.env.DATABASE_URL = buildUrl(TEST_DB);
 }
