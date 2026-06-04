@@ -2,6 +2,20 @@ export interface Ingredient {
 	id: string;
 	name: string;
 	unit: string;
+	categoryId: string;
+	createdAt: Date;
+	updatedAt: Date;
+}
+
+/**
+ * Read model returned by queries and write results. The category name is a
+ * read concern (enriched in the read path), never stored on the aggregate —
+ * see constitution v1.2.0 "Aggregate References".
+ */
+export interface IngredientView {
+	id: string;
+	name: string;
+	unit: string;
 	category: { id: string; name: string };
 	createdAt: Date;
 	updatedAt: Date;
