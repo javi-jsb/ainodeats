@@ -59,8 +59,13 @@ export class DrizzleIngredientRepository implements IngredientRepository {
 				})
 				.returning();
 
-			// FK guarantees the row still exists immediately after insert
-			return (await this.findById(row.id))!;
+			const view = await this.findById(row.id);
+			if (!view) {
+				throw new Error(
+					`Ingredient ${row.id} could not be read back after insert`,
+				);
+			}
+			return view;
 		} catch (err) {
 			if (hasPgCode(err, '23505')) {
 				throw new IngredientNameConflict(ingredient.name);
@@ -130,8 +135,13 @@ export class DrizzleIngredientRepository implements IngredientRepository {
 				.returning();
 			if (!row) throw new IngredientNotFound(id);
 
-			// Row exists since we just updated it
-			return (await this.findById(row.id))!;
+			const view = await this.findById(row.id);
+			if (!view) {
+				throw new Error(
+					`Ingredient ${row.id} could not be read back after update`,
+				);
+			}
+			return view;
 		} catch (err) {
 			if (hasPgCode(err, '23505')) {
 				throw new IngredientNameConflict(patch.name as string);

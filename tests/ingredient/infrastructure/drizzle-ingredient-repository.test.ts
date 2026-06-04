@@ -9,6 +9,7 @@ const CATEGORY_ID = '01907f00-0000-7000-8000-000000000001';
 
 function makeRepo(
 	returning: () => Promise<unknown>,
+	selectRows: unknown[] = [{ name: 'Test Category' }],
 ): DrizzleIngredientRepository {
 	const mockDb = {
 		insert: () => ({
@@ -21,7 +22,9 @@ function makeRepo(
 		}),
 		select: () => ({
 			from: () => ({
-				where: () => Promise.resolve([{ name: 'Test Category' }]),
+				innerJoin: () => ({
+					where: () => Promise.resolve(selectRows),
+				}),
 			}),
 		}),
 	};
@@ -80,5 +83,26 @@ describe('DrizzleIngredientRepository — update error handling', () => {
 		await expect(
 			repo.update(ingredient.id, { categoryId: CATEGORY_ID }),
 		).rejects.toBeInstanceOf(CategoryReferenceNotFound);
+	});
+});
+
+describe('DrizzleIngredientRepository — post-write readback', () => {
+	// The row was just written, so findById should always find it. If a
+	// concurrent delete removed it in the gap (TOCTOU), surface an error rather
+	// than returning a malformed result.
+	const writtenRow = () => Promise.resolve([{ id: ingredient.id }]);
+
+	test('insert throws if the row cannot be read back', async () => {
+		const repo = makeRepo(writtenRow, []);
+		await expect(repo.insert(ingredient)).rejects.toThrow(
+			/could not be read back after insert/,
+		);
+	});
+
+	test('update throws if the row cannot be read back', async () => {
+		const repo = makeRepo(writtenRow, []);
+		await expect(repo.update(ingredient.id, { name: 'Test' })).rejects.toThrow(
+			/could not be read back after update/,
+		);
 	});
 });

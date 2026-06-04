@@ -9,7 +9,7 @@ export async function buildTestApp(): Promise<FastifyInstance> {
 }
 
 export async function truncateAll(): Promise<void> {
-	const pool = new pg.Pool({ connectionString: process.env['DATABASE_URL'] });
+	const pool = new pg.Pool({ connectionString: process.env.DATABASE_URL });
 	try {
 		const db = drizzle(pool);
 		await db.execute(
