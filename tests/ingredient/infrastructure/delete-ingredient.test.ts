@@ -3,10 +3,11 @@ import { afterEach, beforeEach, describe, expect, test } from 'vitest';
 import { buildTestApp, truncateAll } from '../../helpers/db.js';
 
 let app: FastifyInstance;
+let categoryId: string;
 
 async function createIngredient(
 	app: FastifyInstance,
-	data: { name: string; unit: string; category: string },
+	data: { name: string; unit: string; categoryId: string },
 ) {
 	const res = await app.inject({
 		method: 'POST',
@@ -19,6 +20,12 @@ async function createIngredient(
 beforeEach(async () => {
 	app = await buildTestApp();
 	await truncateAll();
+	const res = await app.inject({
+		method: 'POST',
+		url: '/ingredient-categories',
+		payload: { name: 'Herb' },
+	});
+	categoryId = res.json<{ id: string }>().id;
 });
 
 afterEach(async () => {
@@ -30,7 +37,7 @@ describe('DELETE /ingredients/:id', () => {
 		const { id } = await createIngredient(app, {
 			name: 'Thyme',
 			unit: 'g',
-			category: 'herb',
+			categoryId,
 		});
 
 		const res = await app.inject({
@@ -45,7 +52,7 @@ describe('DELETE /ingredients/:id', () => {
 		const { id } = await createIngredient(app, {
 			name: 'Sage',
 			unit: 'g',
-			category: 'herb',
+			categoryId,
 		});
 
 		await app.inject({ method: 'DELETE', url: `/ingredients/${id}` });

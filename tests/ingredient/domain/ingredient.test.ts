@@ -5,17 +5,19 @@ import {
 	ValidationError,
 } from '../../../src/ingredient/domain/ingredient.js';
 
+const CATEGORY_ID = '01907f00-0000-7000-8000-000000000001';
+
 describe('normalizeIngredientFields', () => {
-	test('trims leading/trailing whitespace', () => {
+	test('trims leading/trailing whitespace from name and unit', () => {
 		const result = normalizeIngredientFields({
 			name: '  Tomato  ',
 			unit: ' g ',
-			category: ' vegetable ',
+			categoryId: CATEGORY_ID,
 		});
 		expect(result).toEqual({
 			name: 'Tomato',
 			unit: 'g',
-			category: 'vegetable',
+			categoryId: CATEGORY_ID,
 		});
 	});
 
@@ -24,7 +26,7 @@ describe('normalizeIngredientFields', () => {
 			normalizeIngredientFields({
 				name: 'a'.repeat(101),
 				unit: 'g',
-				category: 'veg',
+				categoryId: CATEGORY_ID,
 			}),
 		).toThrow(ValidationError);
 	});
@@ -34,19 +36,18 @@ describe('normalizeIngredientFields', () => {
 			normalizeIngredientFields({
 				name: 'Tomato',
 				unit: 'u'.repeat(51),
-				category: 'veg',
+				categoryId: CATEGORY_ID,
 			}),
 		).toThrow(ValidationError);
 	});
 
-	test('throws ValidationError when category exceeds maxLength after trim', () => {
-		expect(() =>
-			normalizeIngredientFields({
-				name: 'Tomato',
-				unit: 'g',
-				category: 'c'.repeat(51),
-			}),
-		).toThrow(ValidationError);
+	test('passes categoryId through without validation', () => {
+		const result = normalizeIngredientFields({
+			name: 'Tomato',
+			unit: 'g',
+			categoryId: CATEGORY_ID,
+		});
+		expect(result.categoryId).toBe(CATEGORY_ID);
 	});
 });
 
@@ -55,19 +56,19 @@ describe('normalizePartialFields', () => {
 		const result = normalizePartialFields({ unit: '  kg  ' });
 		expect(result).toEqual({ unit: 'kg' });
 		expect(result.name).toBeUndefined();
-		expect(result.category).toBeUndefined();
+		expect(result.categoryId).toBeUndefined();
 	});
 
-	test('normalizes all provided fields including category', () => {
+	test('normalizes name and unit; passes categoryId through', () => {
 		const result = normalizePartialFields({
 			name: '  Tomato  ',
 			unit: '  g  ',
-			category: '  vegetable  ',
+			categoryId: CATEGORY_ID,
 		});
 		expect(result).toEqual({
 			name: 'Tomato',
 			unit: 'g',
-			category: 'vegetable',
+			categoryId: CATEGORY_ID,
 		});
 	});
 });

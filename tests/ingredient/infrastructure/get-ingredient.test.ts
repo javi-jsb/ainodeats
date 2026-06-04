@@ -3,10 +3,17 @@ import { afterEach, beforeEach, describe, expect, test } from 'vitest';
 import { buildTestApp, truncateAll } from '../../helpers/db.js';
 
 let app: FastifyInstance;
+let categoryId: string;
 
 beforeEach(async () => {
 	app = await buildTestApp();
 	await truncateAll();
+	const res = await app.inject({
+		method: 'POST',
+		url: '/ingredient-categories',
+		payload: { name: 'Spice' },
+	});
+	categoryId = res.json<{ id: string }>().id;
 });
 
 afterEach(async () => {
@@ -14,11 +21,11 @@ afterEach(async () => {
 });
 
 describe('GET /ingredients/:id', () => {
-	test('200 — returns ingredient with correct shape', async () => {
+	test('200 — returns ingredient with embedded category', async () => {
 		const created = await app.inject({
 			method: 'POST',
 			url: '/ingredients',
-			payload: { name: 'Garlic', unit: 'cloves', category: 'spice' },
+			payload: { name: 'Garlic', unit: 'cloves', categoryId },
 		});
 		const { id } = created.json<{ id: string }>();
 
@@ -28,14 +35,15 @@ describe('GET /ingredients/:id', () => {
 			id: string;
 			name: string;
 			unit: string;
-			category: string;
+			category: { id: string; name: string };
 			createdAt: string;
 			updatedAt: string;
 		}>();
 		expect(body.id).toBe(id);
 		expect(body.name).toBe('Garlic');
 		expect(body.unit).toBe('cloves');
-		expect(body.category).toBe('spice');
+		expect(body.category.id).toBe(categoryId);
+		expect(body.category.name).toBe('Spice');
 		expect(body.createdAt).toBeTruthy();
 		expect(body.updatedAt).toBeTruthy();
 	});
@@ -44,7 +52,7 @@ describe('GET /ingredients/:id', () => {
 		const created = await app.inject({
 			method: 'POST',
 			url: '/ingredients',
-			payload: { name: 'Salt', unit: 'g', category: 'spice' },
+			payload: { name: 'Salt', unit: 'g', categoryId },
 		});
 		const createdBody = created.json<{
 			id: string;

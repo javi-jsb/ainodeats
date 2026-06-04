@@ -3,10 +3,12 @@ import { afterEach, beforeEach, describe, expect, test } from 'vitest';
 import { buildTestApp, truncateAll } from '../../helpers/db.js';
 
 let app: FastifyInstance;
+let herbId: string;
+let spiceId: string;
 
 async function createIngredient(
 	app: FastifyInstance,
-	data: { name: string; unit: string; category: string },
+	data: { name: string; unit: string; categoryId: string },
 ) {
 	const res = await app.inject({
 		method: 'POST',
@@ -17,7 +19,7 @@ async function createIngredient(
 		id: string;
 		name: string;
 		unit: string;
-		category: string;
+		category: { id: string; name: string };
 		createdAt: string;
 		updatedAt: string;
 	}>();
@@ -26,6 +28,20 @@ async function createIngredient(
 beforeEach(async () => {
 	app = await buildTestApp();
 	await truncateAll();
+
+	const herb = await app.inject({
+		method: 'POST',
+		url: '/ingredient-categories',
+		payload: { name: 'Herb' },
+	});
+	herbId = herb.json<{ id: string }>().id;
+
+	const spice = await app.inject({
+		method: 'POST',
+		url: '/ingredient-categories',
+		payload: { name: 'Spice' },
+	});
+	spiceId = spice.json<{ id: string }>().id;
 });
 
 afterEach(async () => {
@@ -37,7 +53,7 @@ describe('PATCH /ingredients/:id', () => {
 		const created = await createIngredient(app, {
 			name: 'Tomato',
 			unit: 'units',
-			category: 'vegetable',
+			categoryId: herbId,
 		});
 
 		const res = await app.inject({
@@ -50,20 +66,19 @@ describe('PATCH /ingredients/:id', () => {
 			id: string;
 			name: string;
 			unit: string;
-			category: string;
-			updatedAt: string;
+			category: { id: string; name: string };
 		}>();
 		expect(body.id).toBe(created.id);
 		expect(body.name).toBe('Tomato');
 		expect(body.unit).toBe('kg');
-		expect(body.category).toBe('vegetable');
+		expect(body.category.id).toBe(herbId);
 	});
 
 	test('200 — updatedAt advances after update', async () => {
 		const created = await createIngredient(app, {
 			name: 'Basil',
 			unit: 'g',
-			category: 'herb',
+			categoryId: herbId,
 		});
 
 		await new Promise((resolve) => setTimeout(resolve, 10));
@@ -80,30 +95,29 @@ describe('PATCH /ingredients/:id', () => {
 		);
 	});
 
-	test('200 — category updated, other fields unchanged', async () => {
+	test('200 — categoryId updated, category embedded correctly', async () => {
 		const created = await createIngredient(app, {
 			name: 'Basil',
 			unit: 'g',
-			category: 'herb',
+			categoryId: herbId,
 		});
 
 		const res = await app.inject({
 			method: 'PATCH',
 			url: `/ingredients/${created.id}`,
-			payload: { category: 'spice' },
+			payload: { categoryId: spiceId },
 		});
 		expect(res.statusCode).toBe(200);
-		const body = res.json<{ name: string; unit: string; category: string }>();
-		expect(body.category).toBe('spice');
-		expect(body.name).toBe('Basil');
-		expect(body.unit).toBe('g');
+		const body = res.json<{ category: { id: string; name: string } }>();
+		expect(body.category.id).toBe(spiceId);
+		expect(body.category.name).toBe('Spice');
 	});
 
-	test('200 — only name updated, unit and category unchanged', async () => {
+	test('200 — categoryId omitted → category reference unchanged', async () => {
 		const created = await createIngredient(app, {
 			name: 'Basil',
 			unit: 'g',
-			category: 'herb',
+			categoryId: herbId,
 		});
 
 		const res = await app.inject({
@@ -112,9 +126,23 @@ describe('PATCH /ingredients/:id', () => {
 			payload: { name: 'Sweet Basil' },
 		});
 		expect(res.statusCode).toBe(200);
-		const body = res.json<{ unit: string; category: string }>();
-		expect(body.unit).toBe('g');
-		expect(body.category).toBe('herb');
+		const body = res.json<{ category: { id: string } }>();
+		expect(body.category.id).toBe(herbId);
+	});
+
+	test('422 — non-existent categoryId', async () => {
+		const created = await createIngredient(app, {
+			name: 'Thyme',
+			unit: 'g',
+			categoryId: herbId,
+		});
+
+		const res = await app.inject({
+			method: 'PATCH',
+			url: `/ingredients/${created.id}`,
+			payload: { categoryId: '01907f00-0000-7000-8000-000000000099' },
+		});
+		expect(res.statusCode).toBe(422);
 	});
 
 	test('404 — unknown id', async () => {
@@ -130,12 +158,12 @@ describe('PATCH /ingredients/:id', () => {
 		await createIngredient(app, {
 			name: 'Tomato',
 			unit: 'units',
-			category: 'vegetable',
+			categoryId: herbId,
 		});
 		const second = await createIngredient(app, {
 			name: 'Potato',
 			unit: 'units',
-			category: 'vegetable',
+			categoryId: herbId,
 		});
 
 		const res = await app.inject({
@@ -150,7 +178,7 @@ describe('PATCH /ingredients/:id', () => {
 		const created = await createIngredient(app, {
 			name: 'Tomato',
 			unit: 'units',
-			category: 'vegetable',
+			categoryId: herbId,
 		});
 		const res = await app.inject({
 			method: 'PATCH',
@@ -164,7 +192,7 @@ describe('PATCH /ingredients/:id', () => {
 		const created = await createIngredient(app, {
 			name: 'Tomato',
 			unit: 'units',
-			category: 'vegetable',
+			categoryId: herbId,
 		});
 		const res = await app.inject({
 			method: 'PATCH',

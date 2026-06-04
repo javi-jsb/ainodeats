@@ -20,12 +20,15 @@ function toDto(ingredient: {
 	id: string;
 	name: string;
 	unit: string;
-	category: string;
+	category: { id: string; name: string };
 	createdAt: Date;
 	updatedAt: Date;
 }) {
 	return {
-		...ingredient,
+		id: ingredient.id,
+		name: ingredient.name,
+		unit: ingredient.unit,
+		category: ingredient.category,
 		createdAt: ingredient.createdAt.toISOString(),
 		updatedAt: ingredient.updatedAt.toISOString(),
 	};

@@ -7,7 +7,11 @@ export default defineConfig({
     coverage: {
       provider: "v8",
       include: ["src/**/*.ts"],
-      exclude: ["src/main.ts", "src/ingredient/infrastructure/ingredient-table.ts"],
+      exclude: [
+        "src/main.ts",
+        "src/ingredient/infrastructure/ingredient-table.ts",
+        "src/ingredient-category/infrastructure/ingredient-category-table.ts",
+      ],
       thresholds: {
         lines: 100,
         branches: 100,

@@ -5,7 +5,7 @@ import type { IngredientRepository } from '../domain/ingredient-repository.js';
 export interface CreateIngredientCommand {
 	name: string;
 	unit: string;
-	category: string;
+	categoryId: string;
 }
 
 export async function createIngredient(
@@ -15,7 +15,9 @@ export async function createIngredient(
 	const normalized = normalizeIngredientFields(command);
 	return repo.insert({
 		id: uuidv7(),
-		...normalized,
+		name: normalized.name,
+		unit: normalized.unit,
+		category: { id: normalized.categoryId, name: '' },
 		createdAt: new Date(),
 		updatedAt: new Date(),
 	});

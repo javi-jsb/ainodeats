@@ -1,10 +1,12 @@
 import type { FastifyInstance } from 'fastify';
 import { afterEach, beforeEach, describe, expect, test } from 'vitest';
 import {
+	CategoryReferenceNotFound,
 	IngredientNameConflict,
 	IngredientNotFound,
 } from '../../../src/ingredient/domain/errors.js';
 import { ValidationError } from '../../../src/ingredient/domain/ingredient.js';
+import { CategoryNotFound } from '../../../src/ingredient-category/domain/errors.js';
 import { handleError } from '../../../src/shared/infrastructure/app.js';
 import { buildTestApp, truncateAll } from '../../helpers/db.js';
 
@@ -30,7 +32,7 @@ test('GET /docs returns 200', async () => {
 	expect(res.statusCode).toBe(200);
 });
 
-test('GET /docs/json returns OpenAPI document with all ingredient paths', async () => {
+test('GET /docs/json returns OpenAPI document with all ingredient paths and ingredient-category paths', async () => {
 	const res = await app.inject({ method: 'GET', url: '/docs/json' });
 	expect(res.statusCode).toBe(200);
 	const doc = res.json<{
@@ -42,6 +44,8 @@ test('GET /docs/json returns OpenAPI document with all ingredient paths', async 
 	expect(doc.info.title).toBe('ainodeats');
 	expect(doc.paths['/ingredients']).toBeTruthy();
 	expect(doc.paths['/ingredients/{id}']).toBeTruthy();
+	expect(doc.paths['/ingredient-categories']).toBeTruthy();
+	expect(doc.paths['/ingredient-categories/{id}']).toBeTruthy();
 });
 
 describe('handleError — unit coverage for error handler branches', () => {
@@ -98,6 +102,16 @@ describe('handleError — unit coverage for error handler branches', () => {
 		expect(sent.status).toBe(404);
 	});
 
+	test('CategoryNotFound (statusCode 404) → 404', () => {
+		const { reply, sent } = makeReply();
+		handleError(
+			new CategoryNotFound('abc'),
+			makeRequest(),
+			reply as unknown as Parameters<typeof handleError>[2],
+		);
+		expect(sent.status).toBe(404);
+	});
+
 	test('IngredientNameConflict (statusCode 409) → 409', () => {
 		const { reply, sent } = makeReply();
 		handleError(
@@ -106,6 +120,16 @@ describe('handleError — unit coverage for error handler branches', () => {
 			reply as unknown as Parameters<typeof handleError>[2],
 		);
 		expect(sent.status).toBe(409);
+	});
+
+	test('CategoryReferenceNotFound (statusCode 422) → 422', () => {
+		const { reply, sent } = makeReply();
+		handleError(
+			new CategoryReferenceNotFound('abc'),
+			makeRequest(),
+			reply as unknown as Parameters<typeof handleError>[2],
+		);
+		expect(sent.status).toBe(422);
 	});
 
 	test('unexpected error → 500', () => {
