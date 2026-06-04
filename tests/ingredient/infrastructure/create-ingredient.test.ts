@@ -78,6 +78,15 @@ describe('POST /ingredients', () => {
 		expect(res.statusCode).toBe(422);
 	});
 
+	test('400 — unknown field is rejected (additionalProperties: false)', async () => {
+		const res = await app.inject({
+			method: 'POST',
+			url: '/ingredients',
+			payload: { name: 'Tomato', unit: 'units', categoryId, foo: 123 },
+		});
+		expect(res.statusCode).toBe(400);
+	});
+
 	test('400 — empty name after trimming', async () => {
 		const res = await app.inject({
 			method: 'POST',

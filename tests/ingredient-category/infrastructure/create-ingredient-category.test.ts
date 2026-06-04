@@ -59,4 +59,13 @@ describe('POST /ingredient-categories', () => {
 		});
 		expect(res.statusCode).toBe(400);
 	});
+
+	test('400 — unknown field is rejected (additionalProperties: false)', async () => {
+		const res = await app.inject({
+			method: 'POST',
+			url: '/ingredient-categories',
+			payload: { name: 'Dairy', color: 'red' },
+		});
+		expect(res.statusCode).toBe(400);
+	});
 });
