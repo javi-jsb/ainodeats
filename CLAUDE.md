@@ -78,6 +78,22 @@ All public-facing content must be written in **English**: issues, PR titles and 
 Stack decisions are governed by the project constitution at `.specify/memory/constitution.md`.
 Changes require a constitution amendment.
 
+## Architecture
+
+The constitution (`.specify/memory/constitution.md`, §Architecture) is authoritative.
+Working summary:
+
+- **Hexagonal + vertical slicing**: code is organized by domain concept under `src/<slice>/`,
+  each owning `domain/` (entities, value objects, ports — no framework imports),
+  `application/` (use cases), and `infrastructure/` (adapters: routes, repositories).
+- **Reference aggregates by identity** (constitution v1.2.0): an aggregate references another
+  **by id**, never by embedding its state — e.g. `Ingredient` holds a `categoryId`, not a
+  `category: {id, name}`. Related data (a category's name next to an ingredient) is joined in
+  the **read path** (repository query / read DTO), not stored on the aggregate. Existence of a
+  referenced id is checked in the application layer against that aggregate's repository, with
+  the database **foreign key as the authoritative atomic backstop**. How far to split read vs.
+  write models is a per-feature YAGNI call — no separate query stack is mandated.
+
 ## Database & Migrations
 
 Connection is read from `DATABASE_URL` (required env var). Local dev:
