@@ -154,6 +154,21 @@ describe('PATCH /ingredients/:id', () => {
 		expect(res.statusCode).toBe(404);
 	});
 
+	test('400 — unknown field is rejected (additionalProperties: false)', async () => {
+		const created = await createIngredient(app, {
+			name: 'Tomato',
+			unit: 'units',
+			categoryId: herbId,
+		});
+
+		const res = await app.inject({
+			method: 'PATCH',
+			url: `/ingredients/${created.id}`,
+			payload: { unit: 'kg', foo: 123 },
+		});
+		expect(res.statusCode).toBe(400);
+	});
+
 	test('409 — rename to existing name (case-insensitive)', async () => {
 		await createIngredient(app, {
 			name: 'Tomato',

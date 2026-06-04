@@ -69,4 +69,15 @@ describe('PATCH /ingredient-categories/:id', () => {
 		});
 		expect(res.statusCode).toBe(400);
 	});
+
+	test('400 — unknown field is rejected (additionalProperties: false)', async () => {
+		const cat = await createCategory(app, 'Dairy');
+
+		const res = await app.inject({
+			method: 'PATCH',
+			url: `/ingredient-categories/${cat.id}`,
+			payload: { name: 'Cereal', color: 'red' },
+		});
+		expect(res.statusCode).toBe(400);
+	});
 });
