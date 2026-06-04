@@ -3,6 +3,7 @@
   ==================
   Version change: [TEMPLATE] → 1.0.0 (initial ratification) → 1.0.1 (add Fastify to stack)
                → 1.1.0 (add Architecture section: hexagonal + vertical slicing)
+               → 1.2.0 (add Architecture rule: reference aggregates by identity)
 
   Modified principles:
   - All sections: template placeholders → concrete content (initial authoring)
@@ -13,14 +14,19 @@
   - Development Workflow
   - Governance
   - Architecture (v1.1.0): hexagonal + vertical slicing rules
+  - Architecture › Aggregate References (v1.2.0): reference by identity, enriched
+    reads as a read concern, existence validation by id with FK backstop
 
   Removed sections:
   - [SECTION_2_NAME] / [SECTION_3_NAME] generic placeholders replaced
 
-  Templates status:
-  - .specify/templates/plan-template.md  ✅ no changes required — structure is feature-specific
+  Templates status (re-verified at v1.2.0):
+  - .specify/templates/plan-template.md  ✅ no changes required — Constitution Check is
+    generic ("Gates determined based on constitution file"), no hardcoded principle list
   - .specify/templates/spec-template.md  ✅ no changes required (template-agnostic)
   - .specify/templates/tasks-template.md ✅ no changes required (template-agnostic)
+  - CLAUDE.md                            ✅ propagated — new "Architecture" section mirrors
+    the reference-by-id rule (Governance step 4)
 
   Deferred TODOs:
   - None
@@ -97,6 +103,24 @@ src/
     └── infrastructure/
 ```
 
+### Aggregate References (reference by identity)
+
+Aggregates reference one another **by identity (id)**, never by embedding another
+aggregate's state. An `Ingredient` holds a `categoryId`, not a copy of the category's
+fields — each aggregate owns its own lifecycle and is the single source of truth for its
+state; embedding duplicates data and risks staleness.
+
+- **Enriched reads are a read concern.** When a response needs related data (e.g. the
+  category name alongside an ingredient), enrichment happens in the read path (repository
+  query / read DTO), NOT by storing the related state on the domain aggregate.
+- **Existence validation is by id**, performed in the application layer against the
+  referenced aggregate's repository, with the database foreign key as the authoritative
+  backstop — the FK is the only atomic guarantee; the application pre-check exists to
+  return a friendly error, not to replace it.
+- **Degree of CQRS is a per-feature YAGNI judgment** (Principle IV): a read DTO that
+  differs from the write aggregate is allowed when it earns its place; a separate query
+  port or stack is NOT mandated.
+
 ### Flat-First Rule
 
 Subdirectories within a layer are created only when there are more than two or three
@@ -146,4 +170,4 @@ table before implementation begins.
 `CLAUDE.md` is the authoritative runtime development guide and MUST remain in sync with this
 constitution.
 
-**Version**: 1.1.0 | **Ratified**: 2026-05-26 | **Last Amended**: 2026-05-26
+**Version**: 1.2.0 | **Ratified**: 2026-05-26 | **Last Amended**: 2026-06-04
