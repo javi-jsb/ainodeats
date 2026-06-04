@@ -1,19 +1,12 @@
 import { type Static, Type } from '@sinclair/typebox';
-
-export const CategorySchema = Type.Object(
-	{
-		id: Type.String({ format: 'uuid' }),
-		name: Type.String({ minLength: 1, maxLength: 100 }),
-	},
-	{ additionalProperties: false },
-);
+import { IngredientCategorySchema } from '../../ingredient-category/infrastructure/ingredient-category-schemas.js';
 
 export const IngredientSchema = Type.Object(
 	{
 		id: Type.String({ format: 'uuid' }),
 		name: Type.String({ minLength: 1, maxLength: 100 }),
 		unit: Type.String({ minLength: 1, maxLength: 50 }),
-		category: CategorySchema,
+		category: IngredientCategorySchema,
 		createdAt: Type.String({ format: 'date-time' }),
 		updatedAt: Type.String({ format: 'date-time' }),
 	},

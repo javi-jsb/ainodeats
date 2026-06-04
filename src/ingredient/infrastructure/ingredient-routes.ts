@@ -6,6 +6,7 @@ import { deleteIngredient } from '../application/delete-ingredient.js';
 import { getIngredient } from '../application/get-ingredient.js';
 import { listIngredients } from '../application/list-ingredients.js';
 import { updateIngredient } from '../application/update-ingredient.js';
+import { DrizzleCategoryExistenceChecker } from './drizzle-category-existence-checker.js';
 import { DrizzleIngredientRepository } from './drizzle-ingredient-repository.js';
 import {
 	IdParamSchema,
@@ -47,7 +48,8 @@ export const ingredientRoutes: FastifyPluginAsync = async (app) => {
 		},
 		async (request, reply) => {
 			const repo = new DrizzleIngredientRepository(request.server.db);
-			const ingredient = await createIngredient(repo, request.body);
+			const categories = new DrizzleCategoryExistenceChecker(request.server.db);
+			const ingredient = await createIngredient(repo, categories, request.body);
 			return reply.status(201).send(toDto(ingredient));
 		},
 	);
@@ -96,8 +98,10 @@ export const ingredientRoutes: FastifyPluginAsync = async (app) => {
 		},
 		async (request, reply) => {
 			const repo = new DrizzleIngredientRepository(request.server.db);
+			const categories = new DrizzleCategoryExistenceChecker(request.server.db);
 			const ingredient = await updateIngredient(
 				repo,
+				categories,
 				request.params.id,
 				request.body,
 			);

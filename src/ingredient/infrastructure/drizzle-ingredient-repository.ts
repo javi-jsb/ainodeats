@@ -9,34 +9,45 @@ import {
 } from '../domain/errors.js';
 import type {
 	Ingredient,
+	IngredientView,
 	PartialIngredientFields,
 } from '../domain/ingredient.js';
 import type { IngredientRepository } from '../domain/ingredient-repository.js';
 import { ingredients } from './ingredient-table.js';
 
-function joinRowToIngredient(row: {
+function rowToView(row: {
 	id: string;
 	name: string;
 	unit: string;
 	categoryId: string;
-	categoryName: string | null;
+	categoryName: string;
 	createdAt: Date;
 	updatedAt: Date;
-}): Ingredient {
+}): IngredientView {
 	return {
 		id: row.id,
 		name: row.name,
 		unit: row.unit,
-		category: { id: row.categoryId, name: row.categoryName! },
+		category: { id: row.categoryId, name: row.categoryName },
 		createdAt: row.createdAt,
 		updatedAt: row.updatedAt,
 	};
 }
 
+const viewColumns = {
+	id: ingredients.id,
+	name: ingredients.name,
+	unit: ingredients.unit,
+	categoryId: ingredients.categoryId,
+	categoryName: ingredientCategories.name,
+	createdAt: ingredients.createdAt,
+	updatedAt: ingredients.updatedAt,
+};
+
 export class DrizzleIngredientRepository implements IngredientRepository {
 	constructor(private readonly db: NodePgDatabase) {}
 
-	async insert(ingredient: Ingredient): Promise<Ingredient> {
+	async insert(ingredient: Ingredient): Promise<IngredientView> {
 		try {
 			const [row] = await this.db
 				.insert(ingredients)
@@ -44,7 +55,7 @@ export class DrizzleIngredientRepository implements IngredientRepository {
 					id: ingredient.id,
 					name: ingredient.name,
 					unit: ingredient.unit,
-					categoryId: ingredient.category.id,
+					categoryId: ingredient.categoryId,
 				})
 				.returning();
 
@@ -55,38 +66,30 @@ export class DrizzleIngredientRepository implements IngredientRepository {
 				throw new IngredientNameConflict(ingredient.name);
 			}
 			if (hasPgCode(err, '23503')) {
-				throw new CategoryReferenceNotFound(ingredient.category.id);
+				throw new CategoryReferenceNotFound(ingredient.categoryId);
 			}
 			throw err;
 		}
 	}
 
-	async findById(id: string): Promise<Ingredient | null> {
+	async findById(id: string): Promise<IngredientView | null> {
 		const rows = await this.db
-			.select({
-				id: ingredients.id,
-				name: ingredients.name,
-				unit: ingredients.unit,
-				categoryId: ingredients.categoryId,
-				categoryName: ingredientCategories.name,
-				createdAt: ingredients.createdAt,
-				updatedAt: ingredients.updatedAt,
-			})
+			.select(viewColumns)
 			.from(ingredients)
-			.leftJoin(
+			.innerJoin(
 				ingredientCategories,
 				eq(ingredients.categoryId, ingredientCategories.id),
 			)
 			.where(sql`${ingredients.id} = ${id}::uuid`);
 
 		if (!rows[0]) return null;
-		return joinRowToIngredient(rows[0]);
+		return rowToView(rows[0]);
 	}
 
 	async findMany(filter: {
 		category?: string;
 		name?: string;
-	}): Promise<Ingredient[]> {
+	}): Promise<IngredientView[]> {
 		const conditions = [];
 		if (filter.category) {
 			conditions.push(
@@ -97,30 +100,22 @@ export class DrizzleIngredientRepository implements IngredientRepository {
 			conditions.push(ilike(ingredients.name, `%${filter.name}%`));
 		}
 		const rows = await this.db
-			.select({
-				id: ingredients.id,
-				name: ingredients.name,
-				unit: ingredients.unit,
-				categoryId: ingredients.categoryId,
-				categoryName: ingredientCategories.name,
-				createdAt: ingredients.createdAt,
-				updatedAt: ingredients.updatedAt,
-			})
+			.select(viewColumns)
 			.from(ingredients)
-			.leftJoin(
+			.innerJoin(
 				ingredientCategories,
 				eq(ingredients.categoryId, ingredientCategories.id),
 			)
 			.where(conditions.length > 0 ? and(...conditions) : undefined)
 			.orderBy(asc(sql`lower(${ingredients.name})`));
 
-		return rows.map(joinRowToIngredient);
+		return rows.map(rowToView);
 	}
 
 	async update(
 		id: string,
 		patch: PartialIngredientFields,
-	): Promise<Ingredient> {
+	): Promise<IngredientView> {
 		const updateValues: Partial<typeof ingredients.$inferInsert> = {};
 		if (patch.name !== undefined) updateValues.name = patch.name;
 		if (patch.unit !== undefined) updateValues.unit = patch.unit;
